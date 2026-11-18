@@ -19,7 +19,7 @@ timed_build() { # $1 = derived data, $2 = log
 echo "project,metric_key,machine_key,run,duration_sec" > "$BENCH_OUT/results.csv"
 : > "$BENCH_OUT/clean.txt"; : > "$BENCH_OUT/incremental.txt"
 for i in $(seq 1 $(( WARMUP_RUNS + BENCHMARK_RUNS ))); do
-  run_label "$i"; DD="$RUNNER_TEMP/signal-dd-$i"; rm -rf "${DD:?}"
+  run_label "$i"; DD="$RUNNER_TEMP/signal-dd"; rm -rf "${DD:?}"  # same path every run, so path-dependent cache keys match
   echo "=== $LABEL: clean build ==="
   CLEAN=$(timed_build "$DD" "$LOGS/$LABEL-clean.log"); echo "clean: ${CLEAN}s"
   printf '\n// benchmark incremental change %s\n' "$LABEL" >> "$INCREMENTAL_FILE"
