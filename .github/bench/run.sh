@@ -10,7 +10,11 @@ LOGS="$BENCH_OUT/logs"; mkdir -p "$LOGS"
 # vendored WebRTC.xcframework (uncached builds find them implicitly). Add the pod's build folder for cached builds only; uncached builds stay unchanged.
 CACHE_ARGS=()
 if [ "${BENCH_BUILD_CACHE:-off}" = xcode ]; then
-  CACHE_ARGS=('FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/XCFrameworkIntermediates/SignalRingRTC')
+  CACHE_ARGS=(
+    # Same paths CocoaPods gives the Signal / SignalUI targets (Pods-SignalUI.debug.xcconfig).
+    'FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC $(SRCROOT)/Pods/SignalRingRTC/out/release $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/XCFrameworkIntermediates/SignalRingRTC/WebRTC'
+    'HEADER_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC/SignalRingRTC.framework/Headers'
+  )
 fi
 
 timed_build() { # $1 = derived data, $2 = log
