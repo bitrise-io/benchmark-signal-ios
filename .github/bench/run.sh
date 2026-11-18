@@ -14,6 +14,9 @@ if [ "${BENCH_BUILD_CACHE:-off}" = xcode ]; then
     # Same paths CocoaPods gives the Signal / SignalUI targets (Pods-SignalUI.debug.xcconfig).
     'FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC $(SRCROOT)/Pods/SignalRingRTC/out/release $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/XCFrameworkIntermediates/SignalRingRTC/WebRTC'
     'HEADER_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC/SignalRingRTC.framework/Headers'
+    # Explicit modules build SignalUI's clang module with the share extension's -Werror, so a deprecation warning in
+    # the generated SignalUI-Swift.h (UITextItemInteraction) fails the build. Warnings stay warnings; output is the same.
+    'GCC_TREAT_WARNINGS_AS_ERRORS=NO'
   )
 fi
 
