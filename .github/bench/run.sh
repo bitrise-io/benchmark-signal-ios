@@ -6,11 +6,11 @@ cd "$GITHUB_WORKSPACE"
 LOGS="$BENCH_OUT/logs"; mkdir -p "$LOGS"
 
 # With Build Cache for Xcode on, the compiler only resolves modules through each target's declared search paths.
-# SignalShareExtension is not a CocoaPods target, so it has no path to the SignalRingRTC pod framework (uncached
-# builds find it implicitly). Add the pod's build folder for cached builds only; uncached builds stay unchanged.
+# SignalShareExtension is not a CocoaPods target, so it has no path to the SignalRingRTC pod framework or its
+# vendored WebRTC.xcframework (uncached builds find them implicitly). Add the pod's build folder for cached builds only; uncached builds stay unchanged.
 CACHE_ARGS=()
 if [ "${BENCH_BUILD_CACHE:-off}" = xcode ]; then
-  CACHE_ARGS=('FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC')
+  CACHE_ARGS=('FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/XCFrameworkIntermediates/SignalRingRTC')
 fi
 
 timed_build() { # $1 = derived data, $2 = log
