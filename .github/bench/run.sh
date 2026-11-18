@@ -5,12 +5,20 @@ source "$(dirname "$0")/lib.sh"
 cd "$GITHUB_WORKSPACE"
 LOGS="$BENCH_OUT/logs"; mkdir -p "$LOGS"
 
+# With Build Cache for Xcode on, the compiler only resolves modules through each target's declared search paths.
+# SignalShareExtension is not a CocoaPods target, so it has no path to the SignalRingRTC pod framework (uncached
+# builds find it implicitly). Add the pod's build folder for cached builds only; uncached builds stay unchanged.
+CACHE_ARGS=()
+if [ "${BENCH_BUILD_CACHE:-off}" = xcode ]; then
+  CACHE_ARGS=('FRAMEWORK_SEARCH_PATHS=$(inherited) $(BUILD_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SignalRingRTC')
+fi
+
 timed_build() { # $1 = derived data, $2 = log
   local start end xc
   start=$(now)
   xcodebuild -workspace Signal.xcworkspace -scheme "$SIGNAL_SCHEME" -configuration "$SIGNAL_CONFIGURATION" \
     -destination generic/platform=iOS -derivedDataPath "$1" -clonedSourcePackagesDirPath "$SPM_DIR" \
-    -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+    -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO "${CACHE_ARGS[@]}" \
     build > "$2" 2>&1 || { tail -n 80 "$2" >&2; return 1; }
   end=$(now); xc=$(xc_seconds "$2")
   if [ -n "$xc" ]; then echo "$xc"; else python3 -c "print(round($end-$start,3))"; fi
