@@ -56,11 +56,27 @@ summary_common() {
   "build_cache_cli": "${BENCH_BBC_VERSION:-}",
   "warmup_runs": ${WARMUP_RUNS},
   "runs": ${BENCHMARK_RUNS},
+  "xcodebuild_args": "${BENCH_XCB_ARGS:-}",
   "github_run": "${GITHUB_SERVER_URL:-}/${GITHUB_REPOSITORY:-}/actions/runs/${GITHUB_RUN_ID:-}"
 JSON
 }
 
+# Tuning experiments: extra xcodebuild arguments from the workflow's xcodebuild_args input (space-separated
+# KEY=VALUE build settings or flags), plus Xcode's per-task timing summary in every build log.
+XCB_EXTRA=(-showBuildTimingSummary)
+if [ -n "${BENCH_XCB_ARGS:-}" ]; then read -r -a _xcb_args <<< "$BENCH_XCB_ARGS"; XCB_EXTRA+=("${_xcb_args[@]}"); fi
+
+# Build Timing Summary of every log -> $BENCH_OUT/timing.txt (task type | count | seconds, summed over tasks)
+timing_summaries() {
+  [ -d "$BENCH_OUT/logs" ] || return 0
+  for f in "$BENCH_OUT"/logs/*.log; do
+    echo "== $(basename "$f" .log)"
+    awk '/^Build Timing Summary/{on=1; next} on && /^\*\* /{exit} on && NF' "$f"
+  done > "$BENCH_OUT/timing.txt"
+}
+
 finish() { # zip logs, show summary
+  timing_summaries
   (cd "$BENCH_OUT" && [ -d logs ] && zip -qr logs.zip logs && rm -rf logs) || true
   cat "$BENCH_OUT/summary.json"
   if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then

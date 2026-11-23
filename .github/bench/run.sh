@@ -25,7 +25,7 @@ timed_build() { # $1 = derived data, $2 = log
   start=$(now)
   xcodebuild -workspace Signal.xcworkspace -scheme "$SIGNAL_SCHEME" -configuration "$SIGNAL_CONFIGURATION" \
     -destination generic/platform=iOS -derivedDataPath "$1" -clonedSourcePackagesDirPath "$SPM_DIR" \
-    -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO "${CACHE_ARGS[@]}" \
+    -disableAutomaticPackageResolution CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO "${CACHE_ARGS[@]}" "${XCB_EXTRA[@]}" \
     build > "$2" 2>&1 || { tail -n 80 "$2" >&2; return 1; }
   end=$(now); xc=$(xc_seconds "$2")
   if [ -n "$xc" ]; then echo "$xc"; else python3 -c "print(round($end-$start,3))"; fi
