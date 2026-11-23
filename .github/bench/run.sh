@@ -17,6 +17,9 @@ if [ "${BENCH_BUILD_CACHE:-off}" = xcode ]; then
     # Explicit modules build SignalUI's clang module with the share extension's -Werror, so a deprecation warning in
     # the generated SignalUI-Swift.h (UITextItemInteraction) fails the build. Warnings stay warnings; output is the same.
     'GCC_TREAT_WARNINGS_AS_ERRORS=NO'
+    # Not enough on its own: Signal's OTHER_SWIFT_FLAGS has -warnings-as-errors, which the explicit-module scanner passes
+    # to the SignalUI clang module build as -Xcc -Werror. Keep only the deprecation warning a warning there.
+    'OTHER_SWIFT_FLAGS=$(inherited) -Xcc -Wno-error=deprecated-declarations'
   )
 fi
 
