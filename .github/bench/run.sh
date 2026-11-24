@@ -40,7 +40,7 @@ for i in $(seq 1 $(( WARMUP_RUNS + BENCHMARK_RUNS ))); do
   run_label "$i"; DD="$RUNNER_TEMP/signal-dd"; rm -rf "${DD:?}"  # same path every run, so path-dependent cache keys match
   echo "=== $LABEL: clean build ==="
   CLEAN=$(timed_build "$DD" "$LOGS/$LABEL-clean.log"); echo "clean: ${CLEAN}s"
-  printf '\n// benchmark incremental change %s\n' "$LABEL" >> "$INCREMENTAL_FILE"
+  printf '\n// benchmark incremental change %s %s\n' "$LABEL" "${GITHUB_RUN_ID:-local}.${GITHUB_RUN_ATTEMPT:-1}" >> "$INCREMENTAL_FILE"
   INCR=$(timed_build "$DD" "$LOGS/$LABEL-incremental.log"); git checkout -- "$INCREMENTAL_FILE"; echo "incremental: ${INCR}s"
   echo "${BENCHMARK_PROJECT},clean_build,${MACHINE_KEY},${LABEL},${CLEAN}" >> "$BENCH_OUT/results.csv"
   echo "${BENCHMARK_PROJECT},incremental_build,${MACHINE_KEY},${LABEL},${INCR}" >> "$BENCH_OUT/results.csv"
